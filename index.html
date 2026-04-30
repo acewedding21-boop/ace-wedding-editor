@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>에이스웨딩 마스터 에디터</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Noto Sans KR',sans-serif;background:#0f0f13;color:#e0e0e0;min-height:100vh}
+        
+        /* Header */
+        .header{background:linear-gradient(135deg,#1a1a24 0%,#252532 100%);border-bottom:1px solid rgba(196,168,122,0.15);padding:20px 32px;display:flex;align-items:center;justify-content:space-between}
+        .header-left{display:flex;align-items:center;gap:14px}
+        .header-logo{width:36px;height:36px;background:linear-gradient(135deg,#c4a87a,#8b7355);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff}
+        .header-title{font-size:18px;font-weight:700;color:#fff}
+        .header-title span{color:#c4a87a;font-weight:400;font-size:13px;margin-left:8px;letter-spacing:1px}
+        .header-status{font-size:12px;color:#6b6b7b;display:flex;align-items:center;gap:6px}
+        .header-status::before{content:'';width:8px;height:8px;background:#4ade80;border-radius:50%;display:inline-block}
+
+        /* Layout */
+        .container{max-width:960px;margin:0 auto;padding:40px 24px 80px}
+        
+        /* Section Card */
+        .card{background:linear-gradient(145deg,#1c1c28,#20202e);border:1px solid rgba(255,255,255,0.06);border-radius:20px;padding:36px;margin-bottom:28px;transition:border-color 0.3s}
+        .card:hover{border-color:rgba(196,168,122,0.2)}
+        .card-header{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+        .card-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+        .card-icon.img{background:rgba(196,168,122,0.12);color:#c4a87a}
+        .card-icon.date{background:rgba(99,179,237,0.12);color:#63b3ed}
+        .card-icon.text{background:rgba(72,187,120,0.12);color:#48bb78}
+        .card-title{font-size:17px;font-weight:700;color:#fff}
+        .card-desc{font-size:13px;color:#6b6b7b;margin-top:2px}
+
+        /* Upload Area */
+        .upload-row{display:flex;gap:20px;flex-wrap:wrap}
+        .upload-box{flex:1;min-width:260px}
+        .upload-label{font-size:13px;font-weight:600;color:#9a9aaf;margin-bottom:10px;display:block}
+        .upload-zone{border:2px dashed rgba(196,168,122,0.25);border-radius:16px;padding:32px 20px;text-align:center;cursor:pointer;transition:all 0.3s;background:rgba(196,168,122,0.03);position:relative;overflow:hidden;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+        .upload-zone:hover{border-color:rgba(196,168,122,0.5);background:rgba(196,168,122,0.06)}
+        .upload-zone.active{border-color:#c4a87a;background:rgba(196,168,122,0.08)}
+        .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+        .upload-icon{font-size:32px;margin-bottom:10px;opacity:0.6}
+        .upload-text{font-size:13px;color:#7a7a8e}
+        .upload-text strong{color:#c4a87a}
+        .preview-img{max-width:100%;max-height:200px;border-radius:12px;margin-top:12px;display:none;object-fit:contain}
+
+        /* Input Fields */
+        .field-group{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}
+        .field{flex:1;min-width:200px}
+        .field label{display:block;font-size:13px;font-weight:600;color:#9a9aaf;margin-bottom:8px}
+        .field input,.field select{width:100%;height:44px;padding:0 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:14px;font-family:inherit;outline:none;transition:border-color 0.3s}
+        .field input:focus,.field select:focus{border-color:#c4a87a}
+        .field select{appearance:none;background-image:url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");background-repeat:no-repeat;background-position:right 12px center;background-size:14px}
+        .field select option{background:#1c1c28;color:#fff}
+        .visit-date-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+        .visit-item{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 20px;flex:1;min-width:180px}
+        .visit-item-label{font-size:12px;color:#6b6b7b;margin-bottom:8px;font-weight:500}
+        .visit-item input{width:100%;height:40px;padding:0 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:14px;font-family:inherit;outline:none;transition:border-color 0.3s}
+        .visit-item input:focus{border-color:#63b3ed}
+
+        /* Form text editor */
+        .text-field{margin-bottom:16px}
+        .text-field label{display:block;font-size:13px;font-weight:600;color:#9a9aaf;margin-bottom:8px}
+        .text-field input{width:100%;height:44px;padding:0 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:14px;font-family:inherit;outline:none;transition:border-color 0.3s}
+        .text-field input:focus{border-color:#48bb78}
+
+        /* Buttons */
+        .btn-row{display:flex;gap:12px;justify-content:center;margin-top:40px;flex-wrap:wrap}
+        .btn{padding:14px 36px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;border:none;transition:all 0.3s;font-family:inherit;letter-spacing:0.5px}
+        .btn-primary{background:linear-gradient(135deg,#c4a87a,#8b7355);color:#fff;box-shadow:0 8px 24px rgba(196,168,122,0.25)}
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(196,168,122,0.35)}
+        .btn-secondary{background:rgba(255,255,255,0.06);color:#aaa;border:1px solid rgba(255,255,255,0.1)}
+        .btn-secondary:hover{background:rgba(255,255,255,0.1);color:#fff}
+        .btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+
+        /* Toast */
+        .toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(80px);background:#1a1a28;border:1px solid rgba(196,168,122,0.3);color:#fff;padding:14px 28px;border-radius:14px;font-size:14px;font-weight:500;opacity:0;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);z-index:999;pointer-events:none;box-shadow:0 12px 40px rgba(0,0,0,0.4)}
+        .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+        /* Info */
+        .info-banner{background:rgba(99,179,237,0.08);border:1px solid rgba(99,179,237,0.15);border-radius:12px;padding:14px 20px;font-size:13px;color:#7eb8da;margin-bottom:28px;line-height:1.7}
+        .info-banner strong{color:#63b3ed}
+
+        /* Live Preview Link */
+        .preview-link{display:inline-flex;align-items:center;gap:6px;color:#c4a87a;font-size:13px;text-decoration:none;margin-top:8px;transition:color 0.2s}
+        .preview-link:hover{color:#e0c694}
+
+        @media(max-width:640px){
+            .header{padding:16px 20px;flex-direction:column;gap:10px;align-items:flex-start}
+            .container{padding:24px 16px 60px}
+            .card{padding:24px 20px}
+            .upload-row{flex-direction:column}
+            .field-group{flex-direction:column}
+            .visit-date-row{flex-direction:column}
+            .btn-row{flex-direction:column}
+            .btn{width:100%;text-align:center}
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <div class="header-logo">A</div>
+            <div class="header-title">에이스웨딩 마스터 에디터<span>ADMIN TOOL</span></div>
+        </div>
+        <div class="header-status">랜딩페이지 연동 중</div>
+    </header>
+
+    <div class="container">
+        <div class="info-banner">
+            <strong>💡 사용 방법:</strong> 아래에서 수정할 내용을 변경한 후 <strong>"수정된 파일 다운로드"</strong> 버튼을 클릭하세요.<br>
+            다운로드된 <code>index.html</code> 파일을 기존 파일과 교체하고 GitHub에 올리면 자동 배포됩니다.
+        </div>
+
+        <!-- 1. Image Upload -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon img">🖼</div>
+                <div>
+                    <div class="card-title">메인 이미지 교체</div>
+                    <div class="card-desc">랜딩페이지 최상단 첫 번째 이미지를 교체합니다 (PC/모바일)</div>
+                </div>
+            </div>
+            <div class="upload-row">
+                <div class="upload-box">
+                    <span class="upload-label">📱 모바일 이미지 (세로형 권장)</span>
+                    <div class="upload-zone" id="mobileUploadZone">
+                        <input type="file" accept="image/*" id="mobileImageInput" onchange="handleImageUpload('mobile', this)">
+                        <div class="upload-icon">📱</div>
+                        <div class="upload-text">클릭 또는 드래그하여<br><strong>모바일 이미지</strong> 업로드</div>
+                        <img class="preview-img" id="mobilePreview">
+                    </div>
+                </div>
+                <div class="upload-box">
+                    <span class="upload-label">🖥 PC 이미지 (가로형 권장)</span>
+                    <div class="upload-zone" id="pcUploadZone">
+                        <input type="file" accept="image/*" id="pcImageInput" onchange="handleImageUpload('pc', this)">
+                        <div class="upload-icon">🖥</div>
+                        <div class="upload-text">클릭 또는 드래그하여<br><strong>PC 이미지</strong> 업로드</div>
+                        <img class="preview-img" id="pcPreview">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Visit Dates -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon date">📅</div>
+                <div>
+                    <div class="card-title">참가예정일 변경</div>
+                    <div class="card-desc">문의 폼의 참가예정일 라디오 버튼 텍스트를 수정합니다</div>
+                </div>
+            </div>
+            <div class="visit-date-row">
+                <div class="visit-item">
+                    <div class="visit-item-label">옵션 1 (토요일)</div>
+                    <input type="text" id="visitDate1" value="05월10일(토)" placeholder="예: 05월10일(토)">
+                </div>
+                <div class="visit-item">
+                    <div class="visit-item-label">옵션 2 (일요일)</div>
+                    <input type="text" id="visitDate2" value="05월11일(일)" placeholder="예: 05월11일(일)">
+                </div>
+                <div class="visit-item">
+                    <div class="visit-item-label">옵션 3 (평일)</div>
+                    <input type="text" id="visitDate3" value="평일 상담예약" placeholder="예: 평일 상담예약">
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Form Text -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon text">✏️</div>
+                <div>
+                    <div class="card-title">폼 텍스트 수정</div>
+                    <div class="card-desc">문의 폼의 제목과 설명 텍스트를 수정합니다</div>
+                </div>
+            </div>
+            <div class="text-field">
+                <label>상단 소제목</label>
+                <input type="text" id="formSubtitle" value="에이스웨딩&웨딩박람회" placeholder="에이스웨딩&웨딩박람회">
+            </div>
+            <div class="text-field">
+                <label>메인 제목</label>
+                <input type="text" id="formTitle" value="무료 참가신청" placeholder="무료 참가신청">
+            </div>
+            <div class="text-field">
+                <label>하단 설명</label>
+                <input type="text" id="formDesc" value="사전예약시 특별선물을 드립니다." placeholder="사전예약시 특별선물을 드립니다.">
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="btn-row">
+            <button class="btn btn-secondary" onclick="resetAll()">↺ 초기화</button>
+            <button class="btn btn-primary" id="downloadBtn" onclick="generateAndDownload()">📥 수정된 파일 다운로드</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // State
+        const state = {
+            mobileImage: null,
+            pcImage: null,
+            originalHtml: null
+        };
+
+        // Landing page URL (Vercel deployed)
+        const LANDING_URL = 'https://wedding-t.vercel.app/';
+
+        // Fetch original HTML on load
+        async function fetchOriginalHtml() {
+            try {
+                const resp = await fetch(LANDING_URL);
+                if (resp.ok) {
+                    state.originalHtml = await resp.text();
+                    showToast('✅ 랜딩페이지 데이터 로드 완료');
+                    parseCurrentValues();
+                }
+            } catch (e) {
+                showToast('⚠️ 랜딩페이지 로드 실패 - 로컬 모드로 동작합니다');
+            }
+        }
+
+        // Parse current values from fetched HTML
+        function parseCurrentValues() {
+            if (!state.originalHtml) return;
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(state.originalHtml, 'text/html');
+
+            // Parse visit dates
+            const radios = doc.querySelectorAll('input[name="visit_date"]');
+            radios.forEach((r, i) => {
+                const label = r.parentElement;
+                if (label) {
+                    const text = label.textContent.trim();
+                    const input = document.getElementById('visitDate' + (i + 1));
+                    if (input) input.value = text;
+                }
+            });
+
+            // Parse form texts
+            const formHeader = doc.querySelector('.form-header');
+            if (formHeader) {
+                const subtitle = formHeader.querySelector('p');
+                const title = formHeader.querySelector('h2');
+                const desc = formHeader.querySelector('.sub-desc');
+                if (subtitle) document.getElementById('formSubtitle').value = subtitle.textContent;
+                if (title) document.getElementById('formTitle').value = title.textContent;
+                if (desc) document.getElementById('formDesc').value = desc.textContent;
+            }
+        }
+
+        // Image upload handler
+        function handleImageUpload(type, input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewId = type === 'mobile' ? 'mobilePreview' : 'pcPreview';
+                const zoneId = type === 'mobile' ? 'mobileUploadZone' : 'pcUploadZone';
+                const preview = document.getElementById(previewId);
+                const zone = document.getElementById(zoneId);
+                
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                zone.classList.add('active');
+                
+                if (type === 'mobile') {
+                    state.mobileImage = { data: e.target.result, file: file };
+                } else {
+                    state.pcImage = { data: e.target.result, file: file };
+                }
+                
+                showToast(`✅ ${type === 'mobile' ? '모바일' : 'PC'} 이미지 업로드 완료`);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Generate modified HTML and download as zip
+        async function generateAndDownload() {
+            const btn = document.getElementById('downloadBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ 생성 중...';
+
+            try {
+                let html = state.originalHtml;
+                
+                if (!html) {
+                    showToast('⚠️ 원본 HTML이 없습니다. 페이지를 새로고침 해주세요.');
+                    btn.disabled = false;
+                    btn.textContent = '📥 수정된 파일 다운로드';
+                    return;
+                }
+
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // 1. Update visit dates
+                const radios = doc.querySelectorAll('input[name="visit_date"]');
+                const dateInputs = [
+                    document.getElementById('visitDate1'),
+                    document.getElementById('visitDate2'),
+                    document.getElementById('visitDate3')
+                ];
+                radios.forEach((r, i) => {
+                    if (dateInputs[i]) {
+                        const label = r.parentElement;
+                        if (label) {
+                            const newText = dateInputs[i].value.trim();
+                            // Keep the radio input, update surrounding text
+                            label.childNodes.forEach(node => {
+                                if (node.nodeType === 3) { // text node
+                                    node.textContent = ' ' + newText + '\n';
+                                }
+                            });
+                        }
+                    }
+                });
+
+                // 2. Update form header texts
+                const formHeader = doc.querySelector('.form-header');
+                if (formHeader) {
+                    const subtitle = formHeader.querySelector('p');
+                    const title = formHeader.querySelector('h2');
+                    const desc = formHeader.querySelector('.sub-desc');
+                    if (subtitle) subtitle.textContent = document.getElementById('formSubtitle').value;
+                    if (title) title.textContent = document.getElementById('formTitle').value;
+                    if (desc) desc.textContent = document.getElementById('formDesc').value;
+                }
+
+                // 3. Handle images - convert to data URLs if uploaded
+                if (state.pcImage) {
+                    const pcImg = doc.querySelector('#section-init picture img');
+                    if (pcImg) pcImg.src = state.pcImage.data;
+                }
+                if (state.mobileImage) {
+                    const mobileSource = doc.querySelector('#section-init picture source');
+                    if (mobileSource) mobileSource.srcset = state.mobileImage.data;
+                }
+
+                // Serialize back to HTML
+                const serializer = new XMLSerializer();
+                let output = '<!DOCTYPE html>\n' + serializer.serializeToString(doc.documentElement);
+                
+                // Clean up XML artifacts from serializer
+                output = output.replace(/ xmlns="http:\/\/www.w3.org\/1999\/xhtml"/g, '');
+
+                // Download
+                const blob = new Blob([output], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'index.html';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showToast('✅ 파일 다운로드 완료! GitHub 레포에 업로드해주세요.');
+            } catch (e) {
+                console.error(e);
+                showToast('❌ 오류가 발생했습니다: ' + e.message);
+            }
+
+            btn.disabled = false;
+            btn.textContent = '📥 수정된 파일 다운로드';
+        }
+
+        // Reset
+        function resetAll() {
+            document.getElementById('mobilePreview').style.display = 'none';
+            document.getElementById('pcPreview').style.display = 'none';
+            document.getElementById('mobileUploadZone').classList.remove('active');
+            document.getElementById('pcUploadZone').classList.remove('active');
+            document.getElementById('mobileImageInput').value = '';
+            document.getElementById('pcImageInput').value = '';
+            state.mobileImage = null;
+            state.pcImage = null;
+            parseCurrentValues();
+            showToast('↺ 초기화 완료');
+        }
+
+        // Toast
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        // Init
+        fetchOriginalHtml();
+    </script>
+</body>
+</html>
