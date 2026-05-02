@@ -184,8 +184,8 @@
         <div class="info-banner">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
             <div>
-                아래에서 수정할 내용을 변경한 후 <strong>수정된 파일 다운로드</strong> 버튼을 클릭하세요.<br>
-                다운로드된 <code>index.html</code> 파일을 기존 파일과 교체하고 GitHub에 올리면 자동 배포됩니다.
+                아래에서 수정할 내용을 변경한 후 <strong>랜딩페이지에 적용</strong> 버튼을 클릭하세요.<br>
+                GitHub를 통해 자동으로 반영되며, 약 1분 후 라이브 사이트에 적용됩니다.
             </div>
         </div>
 
@@ -284,15 +284,32 @@
             </div>
         </div>
 
+        <!-- 4. Settings -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon text">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                </div>
+                <div>
+                    <div class="card-title">GitHub 연동 설정</div>
+                    <div class="card-desc">자동 배포를 위한 토큰 설정 (최초 1회)</div>
+                </div>
+            </div>
+            <div class="text-field">
+                <label>GitHub Personal Access Token</label>
+                <input type="password" id="githubToken" placeholder="ghp_xxxx... (브라우저에만 저장됩니다)">
+            </div>
+        </div>
+
         <!-- Buttons -->
         <div class="btn-row">
             <button class="btn btn-secondary" onclick="resetAll()">
                 <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
                 초기화
             </button>
-            <button class="btn btn-primary" id="downloadBtn" onclick="generateAndDownload()">
-                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                수정된 파일 다운로드
+            <button class="btn btn-primary" id="applyBtn" onclick="applyToLive()">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                랜딩페이지에 적용
             </button>
         </div>
     </div>
@@ -303,136 +320,152 @@
     </div>
 
     <script>
+        const REPO_OWNER = 'taehyeung123';
+        const REPO_NAME = 'wedding-t';
+        const API_BASE = 'https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME;
         const state = { mobileImage: null, pcImage: null, originalHtml: null };
-        const LANDING_URL = 'https://wedding-t.vercel.app/';
 
+        // Token: localStorage only
+        function getToken() { return localStorage.getItem('gh_token') || ''; }
+        function saveToken() { localStorage.setItem('gh_token', document.getElementById('githubToken').value.trim()); showToast('토큰 저장 완료'); }
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = getToken();
+            if (saved) document.getElementById('githubToken').value = saved;
+            document.getElementById('githubToken').addEventListener('change', saveToken);
+        });
+
+        // GitHub API helpers
+        async function ghGet(path) {
+            const r = await fetch(API_BASE + path, { headers: { 'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json' } });
+            if (!r.ok) throw new Error('GitHub API 오류: ' + r.status);
+            return r.json();
+        }
+        async function ghPut(path, content, sha, msg) {
+            const body = { message: msg, content: btoa(unescape(encodeURIComponent(content))), sha };
+            const r = await fetch(API_BASE + path, { method: 'PUT', headers: { 'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            if (!r.ok) throw new Error('파일 업데이트 실패: ' + r.status);
+            return r.json();
+        }
+        async function ghPutBinary(path, base64Data, sha, msg) {
+            const clean = base64Data.replace(/^data:[^;]+;base64,/, '');
+            const body = { message: msg, content: clean };
+            if (sha) body.sha = sha;
+            const r = await fetch(API_BASE + path, { method: 'PUT', headers: { 'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            if (!r.ok) throw new Error('이미지 업로드 실패: ' + r.status);
+            return r.json();
+        }
+        async function getFileSha(path) {
+            try { const d = await ghGet(path); return d.sha; } catch { return null; }
+        }
+
+        // Fetch current landing page
         async function fetchOriginalHtml() {
             try {
-                const resp = await fetch(LANDING_URL);
-                if (resp.ok) {
-                    state.originalHtml = await resp.text();
-                    showToast('랜딩페이지 데이터 로드 완료');
-                    parseCurrentValues();
+                const token = getToken();
+                if (token) {
+                    const d = await ghGet('/contents/index.html');
+                    state.originalHtml = decodeURIComponent(escape(atob(d.content.replace(/\n/g, ''))));
+                    state.htmlSha = d.sha;
+                } else {
+                    const r = await fetch('https://wedding-t.vercel.app/');
+                    if (r.ok) state.originalHtml = await r.text();
                 }
-            } catch (e) {
-                showToast('랜딩페이지 로드 실패 — 로컬 모드로 동작합니다');
-            }
+                if (state.originalHtml) { showToast('랜딩페이지 데이터 로드 완료'); parseCurrentValues(); }
+            } catch (e) { showToast('데이터 로드 실패 — 토큰을 확인해주세요'); }
         }
 
         function parseCurrentValues() {
             if (!state.originalHtml) return;
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(state.originalHtml, 'text/html');
-            const radios = doc.querySelectorAll('input[name="visit_date"]');
-            radios.forEach((r, i) => {
+            const doc = new DOMParser().parseFromString(state.originalHtml, 'text/html');
+            doc.querySelectorAll('input[name="visit_date"]').forEach((r, i) => {
                 const label = r.parentElement;
-                if (label) {
-                    const text = label.textContent.trim();
-                    const input = document.getElementById('visitDate' + (i + 1));
-                    if (input) input.value = text;
-                }
+                if (label) { const el = document.getElementById('visitDate' + (i+1)); if (el) el.value = label.textContent.trim(); }
             });
-            const formHeader = doc.querySelector('.form-header');
-            if (formHeader) {
-                const subtitle = formHeader.querySelector('p');
-                const title = formHeader.querySelector('h2');
-                const desc = formHeader.querySelector('.sub-desc');
-                if (subtitle) document.getElementById('formSubtitle').value = subtitle.textContent;
-                if (title) document.getElementById('formTitle').value = title.textContent;
-                if (desc) document.getElementById('formDesc').value = desc.textContent;
+            const fh = doc.querySelector('.form-header');
+            if (fh) {
+                const s = fh.querySelector('p'), t = fh.querySelector('h2'), d = fh.querySelector('.sub-desc');
+                if (s) document.getElementById('formSubtitle').value = s.textContent;
+                if (t) document.getElementById('formTitle').value = t.textContent;
+                if (d) document.getElementById('formDesc').value = d.textContent;
             }
         }
 
         function handleImageUpload(type, input) {
-            const file = input.files[0];
-            if (!file) return;
+            const file = input.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
-                const previewId = type === 'mobile' ? 'mobilePreview' : 'pcPreview';
-                const zoneId = type === 'mobile' ? 'mobileUploadZone' : 'pcUploadZone';
-                document.getElementById(previewId).src = e.target.result;
-                document.getElementById(previewId).style.display = 'block';
-                document.getElementById(zoneId).classList.add('active');
-                if (type === 'mobile') state.mobileImage = { data: e.target.result, file };
-                else state.pcImage = { data: e.target.result, file };
+                const pid = type === 'mobile' ? 'mobilePreview' : 'pcPreview';
+                const zid = type === 'mobile' ? 'mobileUploadZone' : 'pcUploadZone';
+                document.getElementById(pid).src = e.target.result;
+                document.getElementById(pid).style.display = 'block';
+                document.getElementById(zid).classList.add('active');
+                if (type === 'mobile') state.mobileImage = e.target.result;
+                else state.pcImage = e.target.result;
                 showToast((type === 'mobile' ? '모바일' : 'PC') + ' 이미지 업로드 완료');
             };
             reader.readAsDataURL(file);
         }
 
-        async function generateAndDownload() {
-            const btn = document.getElementById('downloadBtn');
-            btn.disabled = true;
-            btn.querySelector('svg').style.animation = 'pulse 1s infinite';
+        // MAIN: Apply to live
+        async function applyToLive() {
+            const token = getToken();
+            if (!token) { showToast('GitHub 토큰을 먼저 입력해주세요'); return; }
+            const btn = document.getElementById('applyBtn');
+            btn.disabled = true; btn.innerHTML = '<svg viewBox="0 0 24 24" style="animation:pulse 1s infinite"><polyline points="20 6 9 17 4 12"/></svg> 적용 중...';
             try {
-                let html = state.originalHtml;
-                if (!html) { showToast('원본 HTML이 없습니다. 새로고침 해주세요.'); return; }
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-
+                // 1. Upload images if changed
+                if (state.pcImage) {
+                    const sha = await getFileSha('/contents/images/18.jpg');
+                    await ghPutBinary('/contents/images/18.jpg', state.pcImage, sha, 'update: PC main image');
+                }
+                if (state.mobileImage) {
+                    const sha = await getFileSha('/contents/images/mobile/18.jpg');
+                    await ghPutBinary('/contents/images/mobile/18.jpg', state.mobileImage, sha, 'update: mobile main image');
+                }
+                // 2. Update HTML (text changes)
+                const doc = new DOMParser().parseFromString(state.originalHtml, 'text/html');
                 const radios = doc.querySelectorAll('input[name="visit_date"]');
                 ['visitDate1','visitDate2','visitDate3'].forEach((id, i) => {
                     if (radios[i]) {
                         const label = radios[i].parentElement;
-                        if (label) label.childNodes.forEach(node => {
-                            if (node.nodeType === 3) node.textContent = ' ' + document.getElementById(id).value.trim() + '\n';
-                        });
+                        if (label) label.childNodes.forEach(n => { if (n.nodeType === 3) n.textContent = ' ' + document.getElementById(id).value.trim() + '\n'; });
                     }
                 });
-
-                const formHeader = doc.querySelector('.form-header');
-                if (formHeader) {
-                    const subtitle = formHeader.querySelector('p');
-                    const title = formHeader.querySelector('h2');
-                    const desc = formHeader.querySelector('.sub-desc');
-                    if (subtitle) subtitle.textContent = document.getElementById('formSubtitle').value;
-                    if (title) title.textContent = document.getElementById('formTitle').value;
-                    if (desc) desc.textContent = document.getElementById('formDesc').value;
+                const fh = doc.querySelector('.form-header');
+                if (fh) {
+                    const s = fh.querySelector('p'), t = fh.querySelector('h2'), d = fh.querySelector('.sub-desc');
+                    if (s) s.textContent = document.getElementById('formSubtitle').value;
+                    if (t) t.textContent = document.getElementById('formTitle').value;
+                    if (d) d.textContent = document.getElementById('formDesc').value;
                 }
-
-                if (state.pcImage) {
-                    const pcImg = doc.querySelector('#section-init picture img');
-                    if (pcImg) pcImg.src = state.pcImage.data;
-                }
-                if (state.mobileImage) {
-                    const mobileSource = doc.querySelector('#section-init picture source');
-                    if (mobileSource) mobileSource.srcset = state.mobileImage.data;
-                }
-
-                const serializer = new XMLSerializer();
-                let output = '<!DOCTYPE html>\n' + serializer.serializeToString(doc.documentElement);
+                let output = '<!DOCTYPE html>\n' + new XMLSerializer().serializeToString(doc.documentElement);
                 output = output.replace(/ xmlns="http:\/\/www.w3.org\/1999\/xhtml"/g, '');
-
-                const blob = new Blob([output], { type: 'text/html' });
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = 'index.html';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                showToast('파일 다운로드 완료 — GitHub 레포에 업로드해주세요');
+                // Check if HTML actually changed
+                const hasTextChanges = output !== ('<!DOCTYPE html>\n' + new XMLSerializer().serializeToString(new DOMParser().parseFromString(state.originalHtml,'text/html').documentElement).replace(/ xmlns="http:\/\/www.w3.org\/1999\/xhtml"/g,''));
+                if (hasTextChanges) {
+                    const sha = state.htmlSha || (await ghGet('/contents/index.html')).sha;
+                    await ghPut('/contents/index.html', output, sha, 'update: form text and dates');
+                }
+                showToast('적용 완료 — 약 1분 후 라이브 반영됩니다');
+                setTimeout(() => fetchOriginalHtml(), 3000);
             } catch (e) {
-                showToast('오류가 발생했습니다: ' + e.message);
+                showToast('오류: ' + e.message);
             }
-            btn.disabled = false;
-            btn.querySelector('svg').style.animation = '';
+            btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> 랜딩페이지에 적용';
         }
 
         function resetAll() {
             ['mobilePreview','pcPreview'].forEach(id => document.getElementById(id).style.display = 'none');
             ['mobileUploadZone','pcUploadZone'].forEach(id => document.getElementById(id).classList.remove('active'));
             ['mobileImageInput','pcImageInput'].forEach(id => document.getElementById(id).value = '');
-            state.mobileImage = null;
-            state.pcImage = null;
-            parseCurrentValues();
-            showToast('초기화 완료');
+            state.mobileImage = null; state.pcImage = null;
+            parseCurrentValues(); showToast('초기화 완료');
         }
 
         function showToast(msg) {
             const t = document.getElementById('toast');
             document.getElementById('toastText').textContent = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
+            t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000);
         }
 
         fetchOriginalHtml();
