@@ -4,139 +4,227 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>에이스웨딩 마스터 에디터</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <style>
         *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Noto Sans KR',sans-serif;background:#0f0f13;color:#e0e0e0;min-height:100vh}
-        
-        /* Header */
-        .header{background:linear-gradient(135deg,#1a1a24 0%,#252532 100%);border-bottom:1px solid rgba(196,168,122,0.15);padding:20px 32px;display:flex;align-items:center;justify-content:space-between}
+        body{font-family:'Noto Sans KR',sans-serif;background:#f7f3ee;color:#3d3428;min-height:100vh}
+
+        /* ── Header ── */
+        .header{
+            background:linear-gradient(135deg,#fffcf7 0%,#f5ede0 100%);
+            border-bottom:1px solid rgba(139,115,85,0.12);
+            padding:20px 40px;
+            display:flex;align-items:center;justify-content:space-between;
+            position:sticky;top:0;z-index:100;
+            backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+        }
         .header-left{display:flex;align-items:center;gap:14px}
-        .header-logo{width:36px;height:36px;background:linear-gradient(135deg,#c4a87a,#8b7355);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff}
-        .header-title{font-size:18px;font-weight:700;color:#fff}
-        .header-title span{color:#c4a87a;font-weight:400;font-size:13px;margin-left:8px;letter-spacing:1px}
-        .header-status{font-size:12px;color:#6b6b7b;display:flex;align-items:center;gap:6px}
-        .header-status::before{content:'';width:8px;height:8px;background:#4ade80;border-radius:50%;display:inline-block}
+        .header-logo{
+            width:38px;height:38px;
+            background:linear-gradient(135deg,#8b7355,#c4a87a);
+            border-radius:10px;display:flex;align-items:center;justify-content:center;
+        }
+        .header-logo svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:1.8}
+        .header-title{font-size:17px;font-weight:700;color:#3d3428;letter-spacing:-0.3px}
+        .header-title span{color:#a08c6e;font-weight:400;font-size:12px;margin-left:10px;letter-spacing:2px;text-transform:uppercase}
+        .header-status{font-size:12px;color:#a09882;display:flex;align-items:center;gap:8px}
+        .status-dot{width:7px;height:7px;background:#8b7355;border-radius:50%;display:inline-block;animation:pulse 2s infinite}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
 
-        /* Layout */
-        .container{max-width:960px;margin:0 auto;padding:40px 24px 80px}
-        
-        /* Section Card */
-        .card{background:linear-gradient(145deg,#1c1c28,#20202e);border:1px solid rgba(255,255,255,0.06);border-radius:20px;padding:36px;margin-bottom:28px;transition:border-color 0.3s}
-        .card:hover{border-color:rgba(196,168,122,0.2)}
-        .card-header{display:flex;align-items:center;gap:12px;margin-bottom:24px}
-        .card-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-        .card-icon.img{background:rgba(196,168,122,0.12);color:#c4a87a}
-        .card-icon.date{background:rgba(99,179,237,0.12);color:#63b3ed}
-        .card-icon.text{background:rgba(72,187,120,0.12);color:#48bb78}
-        .card-title{font-size:17px;font-weight:700;color:#fff}
-        .card-desc{font-size:13px;color:#6b6b7b;margin-top:2px}
+        /* ── Layout ── */
+        .container{max-width:880px;margin:0 auto;padding:48px 24px 100px}
 
-        /* Upload Area */
+        /* ── Cards ── */
+        .card{
+            background:#fff;
+            border:1px solid rgba(139,115,85,0.1);
+            border-radius:16px;
+            padding:36px 32px;
+            margin-bottom:24px;
+            box-shadow:0 2px 20px rgba(139,115,85,0.04);
+            transition:border-color 0.3s,box-shadow 0.3s;
+        }
+        .card:hover{border-color:rgba(139,115,85,0.18);box-shadow:0 8px 32px rgba(139,115,85,0.07)}
+        .card-header{display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid rgba(139,115,85,0.08)}
+        .card-icon{
+            width:42px;height:42px;border-radius:12px;
+            display:flex;align-items:center;justify-content:center;flex-shrink:0;
+        }
+        .card-icon svg{width:20px;height:20px;stroke-width:1.8;fill:none}
+        .card-icon.img{background:rgba(139,115,85,0.08)}
+        .card-icon.img svg{stroke:#8b7355}
+        .card-icon.date{background:rgba(139,115,85,0.08)}
+        .card-icon.date svg{stroke:#8b7355}
+        .card-icon.text{background:rgba(139,115,85,0.08)}
+        .card-icon.text svg{stroke:#8b7355}
+        .card-title{font-size:16px;font-weight:700;color:#3d3428;letter-spacing:-0.3px}
+        .card-desc{font-size:13px;color:#a09882;margin-top:3px;font-weight:400}
+
+        /* ── Upload ── */
         .upload-row{display:flex;gap:20px;flex-wrap:wrap}
         .upload-box{flex:1;min-width:260px}
-        .upload-label{font-size:13px;font-weight:600;color:#9a9aaf;margin-bottom:10px;display:block}
-        .upload-zone{border:2px dashed rgba(196,168,122,0.25);border-radius:16px;padding:32px 20px;text-align:center;cursor:pointer;transition:all 0.3s;background:rgba(196,168,122,0.03);position:relative;overflow:hidden;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center}
-        .upload-zone:hover{border-color:rgba(196,168,122,0.5);background:rgba(196,168,122,0.06)}
-        .upload-zone.active{border-color:#c4a87a;background:rgba(196,168,122,0.08)}
+        .upload-label{font-size:12px;font-weight:600;color:#8b7355;margin-bottom:10px;display:flex;align-items:center;gap:6px;letter-spacing:0.5px;text-transform:uppercase}
+        .upload-label svg{width:14px;height:14px;stroke:#8b7355;fill:none;stroke-width:1.8}
+        .upload-zone{
+            border:1.5px dashed rgba(139,115,85,0.25);
+            border-radius:14px;padding:36px 20px;text-align:center;
+            cursor:pointer;transition:all 0.3s;
+            background:rgba(139,115,85,0.02);
+            position:relative;overflow:hidden;min-height:200px;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+        }
+        .upload-zone:hover{border-color:rgba(139,115,85,0.45);background:rgba(139,115,85,0.04)}
+        .upload-zone.active{border-color:#8b7355;border-style:solid;background:rgba(139,115,85,0.04)}
         .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer}
-        .upload-icon{font-size:32px;margin-bottom:10px;opacity:0.6}
-        .upload-text{font-size:13px;color:#7a7a8e}
-        .upload-text strong{color:#c4a87a}
-        .preview-img{max-width:100%;max-height:200px;border-radius:12px;margin-top:12px;display:none;object-fit:contain}
+        .upload-zone-icon{margin-bottom:14px;opacity:0.4}
+        .upload-zone-icon svg{width:36px;height:36px;stroke:#8b7355;fill:none;stroke-width:1.2}
+        .upload-text{font-size:13px;color:#a09882;line-height:1.7}
+        .upload-text strong{color:#8b7355;font-weight:600}
+        .preview-img{max-width:100%;max-height:200px;border-radius:10px;margin-top:14px;display:none;object-fit:contain}
 
-        /* Input Fields */
-        .field-group{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}
-        .field{flex:1;min-width:200px}
-        .field label{display:block;font-size:13px;font-weight:600;color:#9a9aaf;margin-bottom:8px}
-        .field input,.field select{width:100%;height:44px;padding:0 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:14px;font-family:inherit;outline:none;transition:border-color 0.3s}
-        .field input:focus,.field select:focus{border-color:#c4a87a}
-        .field select{appearance:none;background-image:url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");background-repeat:no-repeat;background-position:right 12px center;background-size:14px}
-        .field select option{background:#1c1c28;color:#fff}
-        .visit-date-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
-        .visit-item{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 20px;flex:1;min-width:180px}
-        .visit-item-label{font-size:12px;color:#6b6b7b;margin-bottom:8px;font-weight:500}
-        .visit-item input{width:100%;height:40px;padding:0 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:14px;font-family:inherit;outline:none;transition:border-color 0.3s}
-        .visit-item input:focus{border-color:#63b3ed}
+        /* ── Fields ── */
+        .visit-date-row{display:flex;gap:14px;flex-wrap:wrap}
+        .visit-item{
+            background:#faf8f5;border:1px solid rgba(139,115,85,0.1);
+            border-radius:12px;padding:18px 20px;flex:1;min-width:180px;
+            transition:border-color 0.3s;
+        }
+        .visit-item:focus-within{border-color:rgba(139,115,85,0.3)}
+        .visit-item-label{font-size:11px;color:#a09882;margin-bottom:8px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase}
+        .visit-item input{
+            width:100%;height:40px;padding:0 12px;
+            background:#fff;border:1px solid rgba(139,115,85,0.12);
+            border-radius:8px;color:#3d3428;font-size:14px;font-family:inherit;
+            outline:none;transition:border-color 0.3s,box-shadow 0.3s;
+        }
+        .visit-item input:focus{border-color:#c4a87a;box-shadow:0 0 0 3px rgba(196,168,122,0.1)}
 
-        /* Form text editor */
-        .text-field{margin-bottom:16px}
-        .text-field label{display:block;font-size:13px;font-weight:600;color:#9a9aaf;margin-bottom:8px}
-        .text-field input{width:100%;height:44px;padding:0 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:14px;font-family:inherit;outline:none;transition:border-color 0.3s}
-        .text-field input:focus{border-color:#48bb78}
+        .text-field{margin-bottom:18px}
+        .text-field:last-child{margin-bottom:0}
+        .text-field label{display:block;font-size:12px;font-weight:600;color:#8b7355;margin-bottom:8px;letter-spacing:0.5px;text-transform:uppercase}
+        .text-field input{
+            width:100%;height:46px;padding:0 16px;
+            background:#faf8f5;border:1px solid rgba(139,115,85,0.12);
+            border-radius:10px;color:#3d3428;font-size:14px;font-family:inherit;
+            outline:none;transition:all 0.3s;
+        }
+        .text-field input:focus{border-color:#c4a87a;background:#fff;box-shadow:0 0 0 3px rgba(196,168,122,0.1)}
 
-        /* Buttons */
+        /* ── Buttons ── */
         .btn-row{display:flex;gap:12px;justify-content:center;margin-top:40px;flex-wrap:wrap}
-        .btn{padding:14px 36px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;border:none;transition:all 0.3s;font-family:inherit;letter-spacing:0.5px}
-        .btn-primary{background:linear-gradient(135deg,#c4a87a,#8b7355);color:#fff;box-shadow:0 8px 24px rgba(196,168,122,0.25)}
-        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(196,168,122,0.35)}
-        .btn-secondary{background:rgba(255,255,255,0.06);color:#aaa;border:1px solid rgba(255,255,255,0.1)}
-        .btn-secondary:hover{background:rgba(255,255,255,0.1);color:#fff}
+        .btn{
+            padding:14px 36px;border-radius:12px;font-size:14px;font-weight:600;
+            cursor:pointer;border:none;transition:all 0.3s;font-family:inherit;
+            letter-spacing:0.3px;display:inline-flex;align-items:center;gap:8px;
+        }
+        .btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+        .btn-primary{
+            background:linear-gradient(135deg,#8b7355,#a08c6e);color:#fff;
+            box-shadow:0 6px 20px rgba(139,115,85,0.2);
+        }
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(139,115,85,0.28)}
+        .btn-primary:active{transform:translateY(0)}
+        .btn-secondary{background:#fff;color:#8b7355;border:1px solid rgba(139,115,85,0.2)}
+        .btn-secondary:hover{background:#faf8f5;border-color:rgba(139,115,85,0.35)}
         .btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
 
-        /* Toast */
-        .toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(80px);background:#1a1a28;border:1px solid rgba(196,168,122,0.3);color:#fff;padding:14px 28px;border-radius:14px;font-size:14px;font-weight:500;opacity:0;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);z-index:999;pointer-events:none;box-shadow:0 12px 40px rgba(0,0,0,0.4)}
+        /* ── Toast ── */
+        .toast{
+            position:fixed;bottom:32px;left:50%;
+            transform:translateX(-50%) translateY(80px);
+            background:#3d3428;border:1px solid rgba(196,168,122,0.2);
+            color:#fff;padding:14px 28px;border-radius:12px;
+            font-size:13px;font-weight:500;opacity:0;
+            transition:all 0.4s cubic-bezier(0.4,0,0.2,1);
+            z-index:999;pointer-events:none;
+            box-shadow:0 12px 40px rgba(0,0,0,0.15);
+            display:flex;align-items:center;gap:8px;
+        }
+        .toast svg{width:16px;height:16px;stroke:#c4a87a;fill:none;stroke-width:2;flex-shrink:0}
         .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-        /* Info */
-        .info-banner{background:rgba(99,179,237,0.08);border:1px solid rgba(99,179,237,0.15);border-radius:12px;padding:14px 20px;font-size:13px;color:#7eb8da;margin-bottom:28px;line-height:1.7}
-        .info-banner strong{color:#63b3ed}
+        /* ── Info Banner ── */
+        .info-banner{
+            background:#fff;border:1px solid rgba(139,115,85,0.1);
+            border-radius:12px;padding:18px 24px;
+            font-size:13px;color:#7a6e5e;margin-bottom:28px;line-height:1.8;
+            display:flex;gap:14px;align-items:flex-start;
+        }
+        .info-banner svg{width:18px;height:18px;stroke:#8b7355;fill:none;stroke-width:1.8;flex-shrink:0;margin-top:2px}
+        .info-banner strong{color:#3d3428;font-weight:600}
+        .info-banner code{background:rgba(139,115,85,0.08);padding:2px 8px;border-radius:4px;font-size:12px;color:#8b7355}
 
-        /* Live Preview Link */
-        .preview-link{display:inline-flex;align-items:center;gap:6px;color:#c4a87a;font-size:13px;text-decoration:none;margin-top:8px;transition:color 0.2s}
-        .preview-link:hover{color:#e0c694}
-
+        /* ── Responsive ── */
         @media(max-width:640px){
             .header{padding:16px 20px;flex-direction:column;gap:10px;align-items:flex-start}
             .container{padding:24px 16px 60px}
-            .card{padding:24px 20px}
+            .card{padding:28px 22px}
             .upload-row{flex-direction:column}
-            .field-group{flex-direction:column}
             .visit-date-row{flex-direction:column}
             .btn-row{flex-direction:column}
-            .btn{width:100%;text-align:center}
+            .btn{width:100%;justify-content:center}
         }
     </style>
 </head>
 <body>
     <header class="header">
         <div class="header-left">
-            <div class="header-logo">A</div>
-            <div class="header-title">에이스웨딩 마스터 에디터<span>ADMIN TOOL</span></div>
+            <div class="header-logo">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </div>
+            <div class="header-title">에이스웨딩 마스터 에디터<span>Admin Tool</span></div>
         </div>
-        <div class="header-status">랜딩페이지 연동 중</div>
+        <div class="header-status">
+            <span class="status-dot"></span>
+            랜딩페이지 연동 중
+        </div>
     </header>
 
     <div class="container">
         <div class="info-banner">
-            <strong>💡 사용 방법:</strong> 아래에서 수정할 내용을 변경한 후 <strong>"수정된 파일 다운로드"</strong> 버튼을 클릭하세요.<br>
-            다운로드된 <code>index.html</code> 파일을 기존 파일과 교체하고 GitHub에 올리면 자동 배포됩니다.
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            <div>
+                아래에서 수정할 내용을 변경한 후 <strong>수정된 파일 다운로드</strong> 버튼을 클릭하세요.<br>
+                다운로드된 <code>index.html</code> 파일을 기존 파일과 교체하고 GitHub에 올리면 자동 배포됩니다.
+            </div>
         </div>
 
         <!-- 1. Image Upload -->
         <div class="card">
             <div class="card-header">
-                <div class="card-icon img">🖼</div>
+                <div class="card-icon img">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </div>
                 <div>
                     <div class="card-title">메인 이미지 교체</div>
-                    <div class="card-desc">랜딩페이지 최상단 첫 번째 이미지를 교체합니다 (PC/모바일)</div>
+                    <div class="card-desc">랜딩페이지 최상단 첫 번째 이미지를 교체합니다</div>
                 </div>
             </div>
             <div class="upload-row">
                 <div class="upload-box">
-                    <span class="upload-label">📱 모바일 이미지 (세로형 권장)</span>
+                    <span class="upload-label">
+                        <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                        모바일 이미지
+                    </span>
                     <div class="upload-zone" id="mobileUploadZone">
                         <input type="file" accept="image/*" id="mobileImageInput" onchange="handleImageUpload('mobile', this)">
-                        <div class="upload-icon">📱</div>
+                        <div class="upload-zone-icon">
+                            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        </div>
                         <div class="upload-text">클릭 또는 드래그하여<br><strong>모바일 이미지</strong> 업로드</div>
                         <img class="preview-img" id="mobilePreview">
                     </div>
                 </div>
                 <div class="upload-box">
-                    <span class="upload-label">🖥 PC 이미지 (가로형 권장)</span>
+                    <span class="upload-label">
+                        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        PC 이미지
+                    </span>
                     <div class="upload-zone" id="pcUploadZone">
                         <input type="file" accept="image/*" id="pcImageInput" onchange="handleImageUpload('pc', this)">
-                        <div class="upload-icon">🖥</div>
+                        <div class="upload-zone-icon">
+                            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        </div>
                         <div class="upload-text">클릭 또는 드래그하여<br><strong>PC 이미지</strong> 업로드</div>
                         <img class="preview-img" id="pcPreview">
                     </div>
@@ -147,7 +235,9 @@
         <!-- 2. Visit Dates -->
         <div class="card">
             <div class="card-header">
-                <div class="card-icon date">📅</div>
+                <div class="card-icon date">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
                 <div>
                     <div class="card-title">참가예정일 변경</div>
                     <div class="card-desc">문의 폼의 참가예정일 라디오 버튼 텍스트를 수정합니다</div>
@@ -155,15 +245,15 @@
             </div>
             <div class="visit-date-row">
                 <div class="visit-item">
-                    <div class="visit-item-label">옵션 1 (토요일)</div>
+                    <div class="visit-item-label">옵션 1 — 토요일</div>
                     <input type="text" id="visitDate1" value="05월10일(토)" placeholder="예: 05월10일(토)">
                 </div>
                 <div class="visit-item">
-                    <div class="visit-item-label">옵션 2 (일요일)</div>
+                    <div class="visit-item-label">옵션 2 — 일요일</div>
                     <input type="text" id="visitDate2" value="05월11일(일)" placeholder="예: 05월11일(일)">
                 </div>
                 <div class="visit-item">
-                    <div class="visit-item-label">옵션 3 (평일)</div>
+                    <div class="visit-item-label">옵션 3 — 평일</div>
                     <input type="text" id="visitDate3" value="평일 상담예약" placeholder="예: 평일 상담예약">
                 </div>
             </div>
@@ -172,7 +262,9 @@
         <!-- 3. Form Text -->
         <div class="card">
             <div class="card-header">
-                <div class="card-icon text">✏️</div>
+                <div class="card-icon text">
+                    <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </div>
                 <div>
                     <div class="card-title">폼 텍스트 수정</div>
                     <div class="card-desc">문의 폼의 제목과 설명 텍스트를 수정합니다</div>
@@ -180,59 +272,57 @@
             </div>
             <div class="text-field">
                 <label>상단 소제목</label>
-                <input type="text" id="formSubtitle" value="에이스웨딩&웨딩박람회" placeholder="에이스웨딩&웨딩박람회">
+                <input type="text" id="formSubtitle" value="에이스웨딩&웨딩박람회">
             </div>
             <div class="text-field">
                 <label>메인 제목</label>
-                <input type="text" id="formTitle" value="무료 참가신청" placeholder="무료 참가신청">
+                <input type="text" id="formTitle" value="무료 참가신청">
             </div>
             <div class="text-field">
                 <label>하단 설명</label>
-                <input type="text" id="formDesc" value="사전예약시 특별선물을 드립니다." placeholder="사전예약시 특별선물을 드립니다.">
+                <input type="text" id="formDesc" value="사전예약시 특별선물을 드립니다.">
             </div>
         </div>
 
         <!-- Buttons -->
         <div class="btn-row">
-            <button class="btn btn-secondary" onclick="resetAll()">↺ 초기화</button>
-            <button class="btn btn-primary" id="downloadBtn" onclick="generateAndDownload()">📥 수정된 파일 다운로드</button>
+            <button class="btn btn-secondary" onclick="resetAll()">
+                <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                초기화
+            </button>
+            <button class="btn btn-primary" id="downloadBtn" onclick="generateAndDownload()">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                수정된 파일 다운로드
+            </button>
         </div>
     </div>
 
-    <div class="toast" id="toast"></div>
+    <div class="toast" id="toast">
+        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span id="toastText"></span>
+    </div>
 
     <script>
-        // State
-        const state = {
-            mobileImage: null,
-            pcImage: null,
-            originalHtml: null
-        };
-
-        // Landing page URL (Vercel deployed)
+        const state = { mobileImage: null, pcImage: null, originalHtml: null };
         const LANDING_URL = 'https://wedding-t.vercel.app/';
 
-        // Fetch original HTML on load
         async function fetchOriginalHtml() {
             try {
                 const resp = await fetch(LANDING_URL);
                 if (resp.ok) {
                     state.originalHtml = await resp.text();
-                    showToast('✅ 랜딩페이지 데이터 로드 완료');
+                    showToast('랜딩페이지 데이터 로드 완료');
                     parseCurrentValues();
                 }
             } catch (e) {
-                showToast('⚠️ 랜딩페이지 로드 실패 - 로컬 모드로 동작합니다');
+                showToast('랜딩페이지 로드 실패 — 로컬 모드로 동작합니다');
             }
         }
 
-        // Parse current values from fetched HTML
         function parseCurrentValues() {
             if (!state.originalHtml) return;
             const parser = new DOMParser();
             const doc = parser.parseFromString(state.originalHtml, 'text/html');
-
-            // Parse visit dates
             const radios = doc.querySelectorAll('input[name="visit_date"]');
             radios.forEach((r, i) => {
                 const label = r.parentElement;
@@ -242,8 +332,6 @@
                     if (input) input.value = text;
                 }
             });
-
-            // Parse form texts
             const formHeader = doc.querySelector('.form-header');
             if (formHeader) {
                 const subtitle = formHeader.querySelector('p');
@@ -255,75 +343,43 @@
             }
         }
 
-        // Image upload handler
         function handleImageUpload(type, input) {
             const file = input.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 const previewId = type === 'mobile' ? 'mobilePreview' : 'pcPreview';
                 const zoneId = type === 'mobile' ? 'mobileUploadZone' : 'pcUploadZone';
-                const preview = document.getElementById(previewId);
-                const zone = document.getElementById(zoneId);
-                
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-                zone.classList.add('active');
-                
-                if (type === 'mobile') {
-                    state.mobileImage = { data: e.target.result, file: file };
-                } else {
-                    state.pcImage = { data: e.target.result, file: file };
-                }
-                
-                showToast(`✅ ${type === 'mobile' ? '모바일' : 'PC'} 이미지 업로드 완료`);
+                document.getElementById(previewId).src = e.target.result;
+                document.getElementById(previewId).style.display = 'block';
+                document.getElementById(zoneId).classList.add('active');
+                if (type === 'mobile') state.mobileImage = { data: e.target.result, file };
+                else state.pcImage = { data: e.target.result, file };
+                showToast((type === 'mobile' ? '모바일' : 'PC') + ' 이미지 업로드 완료');
             };
             reader.readAsDataURL(file);
         }
 
-        // Generate modified HTML and download as zip
         async function generateAndDownload() {
             const btn = document.getElementById('downloadBtn');
             btn.disabled = true;
-            btn.textContent = '⏳ 생성 중...';
-
+            btn.querySelector('svg').style.animation = 'pulse 1s infinite';
             try {
                 let html = state.originalHtml;
-                
-                if (!html) {
-                    showToast('⚠️ 원본 HTML이 없습니다. 페이지를 새로고침 해주세요.');
-                    btn.disabled = false;
-                    btn.textContent = '📥 수정된 파일 다운로드';
-                    return;
-                }
-
+                if (!html) { showToast('원본 HTML이 없습니다. 새로고침 해주세요.'); return; }
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
 
-                // 1. Update visit dates
                 const radios = doc.querySelectorAll('input[name="visit_date"]');
-                const dateInputs = [
-                    document.getElementById('visitDate1'),
-                    document.getElementById('visitDate2'),
-                    document.getElementById('visitDate3')
-                ];
-                radios.forEach((r, i) => {
-                    if (dateInputs[i]) {
-                        const label = r.parentElement;
-                        if (label) {
-                            const newText = dateInputs[i].value.trim();
-                            // Keep the radio input, update surrounding text
-                            label.childNodes.forEach(node => {
-                                if (node.nodeType === 3) { // text node
-                                    node.textContent = ' ' + newText + '\n';
-                                }
-                            });
-                        }
+                ['visitDate1','visitDate2','visitDate3'].forEach((id, i) => {
+                    if (radios[i]) {
+                        const label = radios[i].parentElement;
+                        if (label) label.childNodes.forEach(node => {
+                            if (node.nodeType === 3) node.textContent = ' ' + document.getElementById(id).value.trim() + '\n';
+                        });
                     }
                 });
 
-                // 2. Update form header texts
                 const formHeader = doc.querySelector('.form-header');
                 if (formHeader) {
                     const subtitle = formHeader.querySelector('p');
@@ -334,7 +390,6 @@
                     if (desc) desc.textContent = document.getElementById('formDesc').value;
                 }
 
-                // 3. Handle images - convert to data URLs if uploaded
                 if (state.pcImage) {
                     const pcImg = doc.querySelector('#section-init picture img');
                     if (pcImg) pcImg.src = state.pcImage.data;
@@ -344,57 +399,42 @@
                     if (mobileSource) mobileSource.srcset = state.mobileImage.data;
                 }
 
-                // Serialize back to HTML
                 const serializer = new XMLSerializer();
                 let output = '<!DOCTYPE html>\n' + serializer.serializeToString(doc.documentElement);
-                
-                // Clean up XML artifacts from serializer
                 output = output.replace(/ xmlns="http:\/\/www.w3.org\/1999\/xhtml"/g, '');
 
-                // Download
                 const blob = new Blob([output], { type: 'text/html' });
-                const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                a.href = url;
+                a.href = URL.createObjectURL(blob);
                 a.download = 'index.html';
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-
-                showToast('✅ 파일 다운로드 완료! GitHub 레포에 업로드해주세요.');
+                showToast('파일 다운로드 완료 — GitHub 레포에 업로드해주세요');
             } catch (e) {
-                console.error(e);
-                showToast('❌ 오류가 발생했습니다: ' + e.message);
+                showToast('오류가 발생했습니다: ' + e.message);
             }
-
             btn.disabled = false;
-            btn.textContent = '📥 수정된 파일 다운로드';
+            btn.querySelector('svg').style.animation = '';
         }
 
-        // Reset
         function resetAll() {
-            document.getElementById('mobilePreview').style.display = 'none';
-            document.getElementById('pcPreview').style.display = 'none';
-            document.getElementById('mobileUploadZone').classList.remove('active');
-            document.getElementById('pcUploadZone').classList.remove('active');
-            document.getElementById('mobileImageInput').value = '';
-            document.getElementById('pcImageInput').value = '';
+            ['mobilePreview','pcPreview'].forEach(id => document.getElementById(id).style.display = 'none');
+            ['mobileUploadZone','pcUploadZone'].forEach(id => document.getElementById(id).classList.remove('active'));
+            ['mobileImageInput','pcImageInput'].forEach(id => document.getElementById(id).value = '');
             state.mobileImage = null;
             state.pcImage = null;
             parseCurrentValues();
-            showToast('↺ 초기화 완료');
+            showToast('초기화 완료');
         }
 
-        // Toast
         function showToast(msg) {
             const t = document.getElementById('toast');
-            t.textContent = msg;
+            document.getElementById('toastText').textContent = msg;
             t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 3000);
         }
 
-        // Init
         fetchOriginalHtml();
     </script>
 </body>
