@@ -406,14 +406,13 @@
             reader.readAsDataURL(file);
         }
 
-        // MAIN: Apply to live
+        // MAIN: Apply to live (string replacement - safe, no DOM corruption)
         async function applyToLive() {
             const token = getToken();
-            if (!token) { showToast('GitHub 토큰을 먼저 입력해주세요'); return; }
+            if (!token) { showToast('GitHub \ud1a0\ud070\uc744 \uba3c\uc800 \uc785\ub825\ud574\uc8fc\uc138\uc694'); return; }
             const btn = document.getElementById('applyBtn');
-            btn.disabled = true; btn.innerHTML = '<svg viewBox="0 0 24 24" style="animation:pulse 1s infinite"><polyline points="20 6 9 17 4 12"/></svg> 적용 중...';
+            btn.disabled = true; btn.innerHTML = '\u003csvg viewBox="0 0 24 24" style="animation:pulse 1s infinite"\u003e\u003cpolyline points="20 6 9 17 4 12"/\u003e\u003c/svg\u003e \uc801\uc6a9 \uc911...';
             try {
-                // 1. Upload images if changed
                 if (state.pcImage) {
                     const sha = await getFileSha('/contents/images/18.jpg');
                     await ghPutBinary('/contents/images/18.jpg', state.pcImage, sha, 'update: PC main image');
@@ -422,36 +421,38 @@
                     const sha = await getFileSha('/contents/images/mobile/18.jpg');
                     await ghPutBinary('/contents/images/mobile/18.jpg', state.mobileImage, sha, 'update: mobile main image');
                 }
-                // 2. Update HTML (text changes)
-                const doc = new DOMParser().parseFromString(state.originalHtml, 'text/html');
-                const radios = doc.querySelectorAll('input[name="visit_date"]');
-                ['visitDate1','visitDate2','visitDate3'].forEach((id, i) => {
-                    if (radios[i]) {
-                        const label = radios[i].parentElement;
-                        if (label) label.childNodes.forEach(n => { if (n.nodeType === 3) n.textContent = ' ' + document.getElementById(id).value.trim() + '\n'; });
-                    }
+                let html = state.originalHtml;
+                let changed = false;
+                const newSubtitle = document.getElementById('formSubtitle').value;
+                const newTitle = document.getElementById('formTitle').value;
+                const newDesc = document.getElementById('formDesc').value;
+                html = html.replace(/(class="form-header">\s*<p[^>]*>)([^<]+)(<\/p>)/, function(m, pre, old, post) {
+                    if (old !== newSubtitle) { changed = true; return pre + newSubtitle + post; } return m;
                 });
-                const fh = doc.querySelector('.form-header');
-                if (fh) {
-                    const s = fh.querySelector('p'), t = fh.querySelector('h2'), d = fh.querySelector('.sub-desc');
-                    if (s) s.textContent = document.getElementById('formSubtitle').value;
-                    if (t) t.textContent = document.getElementById('formTitle').value;
-                    if (d) d.textContent = document.getElementById('formDesc').value;
-                }
-                let output = '<!DOCTYPE html>\n' + new XMLSerializer().serializeToString(doc.documentElement);
-                output = output.replace(/ xmlns="http:\/\/www.w3.org\/1999\/xhtml"/g, '');
-                // Check if HTML actually changed
-                const hasTextChanges = output !== ('<!DOCTYPE html>\n' + new XMLSerializer().serializeToString(new DOMParser().parseFromString(state.originalHtml,'text/html').documentElement).replace(/ xmlns="http:\/\/www.w3.org\/1999\/xhtml"/g,''));
-                if (hasTextChanges) {
+                html = html.replace(/(class="form-header">[\s\S]*?<h2[^>]*>)([^<]+)(<\/h2>)/, function(m, pre, old, post) {
+                    if (old !== newTitle) { changed = true; return pre + newTitle + post; } return m;
+                });
+                html = html.replace(/(class="sub-desc"[^>]*>)([^<]+)(<\/p>)/, function(m, pre, old, post) {
+                    if (old !== newDesc) { changed = true; return pre + newDesc + post; } return m;
+                });
+                var dateIdx = 0;
+                var dateInputs = ['visitDate1','visitDate2','visitDate3'];
+                html = html.replace(/<label[^>]*>\s*<input[^>]*name="visit_date"[^>]*>\s*([^\n<]+)/g, function(match, oldText) {
+                    var newText = document.getElementById(dateInputs[dateIdx]).value.trim();
+                    dateIdx++;
+                    if (oldText.trim() !== newText) { changed = true; return match.replace(oldText.trim(), newText); }
+                    return match;
+                });
+                if (changed) {
                     const sha = state.htmlSha || (await ghGet('/contents/index.html')).sha;
-                    await ghPut('/contents/index.html', output, sha, 'update: form text and dates');
+                    await ghPut('/contents/index.html', html, sha, 'update: form text and dates');
                 }
-                showToast('적용 완료 — 약 1분 후 라이브 반영됩니다');
-                setTimeout(() => fetchOriginalHtml(), 3000);
+                showToast('\uc801\uc6a9 \uc644\ub8cc \u2014 \uc57d 1\ubd84 \ud6c4 \ub77c\uc774\ube0c \ubc18\uc601\ub429\ub2c8\ub2e4');
+                setTimeout(function() { fetchOriginalHtml(); }, 3000);
             } catch (e) {
-                showToast('오류: ' + e.message);
+                showToast('\uc624\ub958: ' + e.message);
             }
-            btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> 랜딩페이지에 적용';
+            btn.disabled = false; btn.innerHTML = '\u003csvg viewBox="0 0 24 24"\u003e\u003cpolyline points="20 6 9 17 4 12"/\u003e\u003c/svg\u003e \ub79c\ub529\ud398\uc774\uc9c0\uc5d0 \uc801\uc6a9';
         }
 
         function resetAll() {
