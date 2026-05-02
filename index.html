@@ -327,7 +327,7 @@
 
         // Token: localStorage only
         function getToken() { return localStorage.getItem('gh_token') || ''; }
-        function saveToken() { localStorage.setItem('gh_token', document.getElementById('githubToken').value.trim()); showToast('토큰 저장 완료'); }
+        function saveToken() { localStorage.setItem('gh_token', document.getElementById('githubToken').value.trim()); showToast('토큰 저장 완료'); fetchOriginalHtml(); }
         document.addEventListener('DOMContentLoaded', () => {
             const saved = getToken();
             if (saved) document.getElementById('githubToken').value = saved;
