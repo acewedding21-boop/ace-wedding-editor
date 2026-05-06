@@ -439,10 +439,13 @@
                 });
                 var dateIdx = 0;
                 var dateInputs = ['visitDate1','visitDate2','visitDate3'];
-                html = html.replace(/<label[^>]*>\s*<input[^>]*name="visit_date"[^>]*>\s*([^\n<]+)/g, function(match, oldText) {
+                html = html.replace(/<label[^>]*>\s*<input([^>]*name="visit_date")[^>]*value="([^"]*)"([^>]*)>\s*([^\n<]+)/g, function(match, pre, oldValue, post, oldText) {
                     var newText = document.getElementById(dateInputs[dateIdx]).value.trim();
                     dateIdx++;
-                    if (oldText.trim() !== newText) { changed = true; return match.replace(oldText.trim(), newText); }
+                    if (oldText.trim() !== newText || oldValue !== newText) {
+                        changed = true;
+                        return match.replace('value="' + oldValue + '"', 'value="' + newText + '"').replace(oldText.trim(), newText);
+                    }
                     return match;
                 });
                 if (changed) {
