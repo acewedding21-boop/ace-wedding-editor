@@ -221,7 +221,7 @@
                 </div>
                 <div>
                     <div class="card-title">섹션별 이미지 교체 <span id="pendingBadge" class="pending-count" style="display:none">0개 대기</span></div>
-                    <div class="card-desc">변경할 섹션을 선택한 후 이미지를 업로드하세요</div>
+                    <div class="card-desc">변경할 섹션을 선택한 후 이미지를 업로드하세요 (이미지 예시)</div>
                 </div>
             </div>
             <div class="section-grid" id="sectionGrid"></div>
@@ -449,7 +449,7 @@
                 const card = document.createElement('div');
                 card.className = 'section-card' + (state.pending[sec.file] ? ' has-pending' : '') + (state.selectedSection === sec.file ? ' selected' : '');
                 card.onclick = function() { selectSection(sec.file); };
-                card.innerHTML = '<img class="section-thumb" src="' + LIVE_BASE + '/images/mobile/' + sec.file + '.jpg" alt="' + sec.name + '" loading="lazy" onerror="this.style.background=\'#ddd\'">' +
+                card.innerHTML = '<img class="section-thumb" src="thumbs/' + sec.file + '.jpg" alt="' + sec.name + '" loading="lazy" onerror="this.style.background=\'#ddd\'">' +
                     '<div class="section-label"><span class="num">' + sec.order + '</span>' + sec.name + '</div>';
                 grid.appendChild(card);
             });
