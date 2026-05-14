@@ -154,6 +154,28 @@
         .info-banner strong{color:#3d3428;font-weight:600}
         .info-banner code{background:rgba(139,115,85,0.08);padding:2px 8px;border-radius:4px;font-size:12px;color:#8b7355}
 
+        /* ── Section Grid ── */
+        .section-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+        .section-card{border:2px solid rgba(139,115,85,0.1);border-radius:12px;cursor:pointer;overflow:hidden;transition:all 0.3s;position:relative;background:#faf8f5}
+        .section-card:hover{border-color:rgba(139,115,85,0.3);transform:translateY(-2px);box-shadow:0 4px 16px rgba(139,115,85,0.1)}
+        .section-card.selected{border-color:#8b7355;box-shadow:0 0 0 3px rgba(139,115,85,0.15)}
+        .section-card.has-pending::after{content:'✓';position:absolute;top:6px;right:6px;width:22px;height:22px;background:#8b7355;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+        .section-thumb{width:100%;height:100px;object-fit:cover;display:block;background:#eee}
+        .section-label{padding:8px 10px;font-size:11px;font-weight:600;color:#5a5046;line-height:1.3}
+        .section-label .num{display:inline-block;background:rgba(139,115,85,0.1);color:#8b7355;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px}
+        .upload-panel{display:none;margin-top:20px;padding:24px;background:#faf8f5;border-radius:14px;border:1px solid rgba(139,115,85,0.1)}
+        .upload-panel.visible{display:block}
+        .upload-panel-title{font-size:14px;font-weight:700;color:#3d3428;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+        .upload-panel-title .badge{background:rgba(139,115,85,0.1);color:#8b7355;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600}
+        .pending-count{display:inline-block;background:#8b7355;color:#fff;border-radius:12px;padding:2px 10px;font-size:11px;font-weight:600;margin-left:8px}
+        /* ── OG Preview Card ── */
+        .og-preview-box{margin-bottom:16px}
+        .og-preview-card{border:1px solid rgba(139,115,85,0.15);border-radius:12px;overflow:hidden;background:#fff;max-width:400px}
+        .og-preview-img{width:100%;height:200px;background:#eee;overflow:hidden}
+        .og-preview-text{padding:14px 16px}
+        .og-preview-title{font-size:15px;font-weight:700;color:#3d3428;margin-bottom:4px;line-height:1.4}
+        .og-preview-desc{font-size:13px;color:#7a6e5e;margin-bottom:6px;line-height:1.4}
+        .og-preview-url{font-size:11px;color:#a09882}
         /* ── Responsive ── */
         @media(max-width:640px){
             .header{padding:16px 20px;flex-direction:column;gap:10px;align-items:flex-start}
@@ -163,6 +185,8 @@
             .visit-date-row{flex-direction:column}
             .btn-row{flex-direction:column}
             .btn{width:100%;justify-content:center}
+            .section-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+            .section-thumb{height:75px}
         }
     </style>
 </head>
@@ -189,44 +213,38 @@
             </div>
         </div>
 
-        <!-- 1. Image Upload -->
+        <!-- 1. Section Image Upload -->
         <div class="card">
             <div class="card-header">
                 <div class="card-icon img">
                     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                 </div>
                 <div>
-                    <div class="card-title">메인 이미지 교체</div>
-                    <div class="card-desc">랜딩페이지 최상단 첫 번째 이미지를 교체합니다</div>
+                    <div class="card-title">섹션별 이미지 교체 <span id="pendingBadge" class="pending-count" style="display:none">0개 대기</span></div>
+                    <div class="card-desc">변경할 섹션을 선택한 후 이미지를 업로드하세요</div>
                 </div>
             </div>
-            <div class="upload-row">
-                <div class="upload-box">
-                    <span class="upload-label">
-                        <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-                        모바일 이미지
-                    </span>
-                    <div class="upload-zone" id="mobileUploadZone">
-                        <input type="file" accept="image/*" id="mobileImageInput" onchange="handleImageUpload('mobile', this)">
-                        <div class="upload-zone-icon">
-                            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div class="section-grid" id="sectionGrid"></div>
+            <div class="upload-panel" id="uploadPanel">
+                <div class="upload-panel-title"><span id="uploadPanelLabel">섹션 선택</span><span class="badge" id="uploadPanelFile"></span></div>
+                <div class="upload-row">
+                    <div class="upload-box">
+                        <span class="upload-label"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> 모바일 이미지</span>
+                        <div class="upload-zone" id="mobileUploadZone">
+                            <input type="file" accept="image/*" id="mobileImageInput" onchange="handleSectionUpload('mobile',this)">
+                            <div class="upload-zone-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+                            <div class="upload-text">클릭 또는 드래그하여<br><strong>모바일 이미지</strong> 업로드</div>
+                            <img class="preview-img" id="mobilePreview">
                         </div>
-                        <div class="upload-text">클릭 또는 드래그하여<br><strong>모바일 이미지</strong> 업로드</div>
-                        <img class="preview-img" id="mobilePreview">
                     </div>
-                </div>
-                <div class="upload-box">
-                    <span class="upload-label">
-                        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                        PC 이미지
-                    </span>
-                    <div class="upload-zone" id="pcUploadZone">
-                        <input type="file" accept="image/*" id="pcImageInput" onchange="handleImageUpload('pc', this)">
-                        <div class="upload-zone-icon">
-                            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <div class="upload-box">
+                        <span class="upload-label"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> PC 이미지</span>
+                        <div class="upload-zone" id="pcUploadZone">
+                            <input type="file" accept="image/*" id="pcImageInput" onchange="handleSectionUpload('pc',this)">
+                            <div class="upload-zone-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+                            <div class="upload-text">클릭 또는 드래그하여<br><strong>PC 이미지</strong> 업로드</div>
+                            <img class="preview-img" id="pcPreview">
                         </div>
-                        <div class="upload-text">클릭 또는 드래그하여<br><strong>PC 이미지</strong> 업로드</div>
-                        <img class="preview-img" id="pcPreview">
                     </div>
                 </div>
             </div>
@@ -284,7 +302,52 @@
             </div>
         </div>
 
-        <!-- 4. Settings (hidden) -->
+        <!-- 4. 링크 미리보기 (OG) -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon img">
+                    <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                </div>
+                <div>
+                    <div class="card-title">링크 미리보기 수정</div>
+                    <div class="card-desc">카카오톡·메신저에서 링크 공유 시 보이는 제목, 설명, 이미지를 변경합니다</div>
+                </div>
+            </div>
+            <div class="og-preview-box" id="ogPreviewBox">
+                <div class="og-preview-card">
+                    <div class="og-preview-img" id="ogPreviewImgArea">
+                        <img id="ogCurrentImg" src="" alt="미리보기 이미지" style="width:100%;height:100%;object-fit:cover;display:none;border-radius:10px 10px 0 0">
+                        <div id="ogImgPlaceholder" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#a09882;font-size:13px">이미지 없음</div>
+                    </div>
+                    <div class="og-preview-text">
+                        <div class="og-preview-title" id="ogPreviewTitle">에이스웨딩 | 청주 웨딩 플래너</div>
+                        <div class="og-preview-desc" id="ogPreviewDesc">청주 최대 웨딩 플래너</div>
+                        <div class="og-preview-url">ace-wedding-eosin.vercel.app</div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top:20px">
+                <div class="text-field">
+                    <label>미리보기 제목</label>
+                    <input type="text" id="ogTitle" placeholder="예: 에이스웨딩 | 청주 웨딩 플래너" oninput="document.getElementById('ogPreviewTitle').textContent=this.value">
+                </div>
+                <div class="text-field">
+                    <label>미리보기 설명</label>
+                    <input type="text" id="ogDesc" placeholder="예: 청주 최대 웨딩 플래너 — 원스톱 서비스" oninput="document.getElementById('ogPreviewDesc').textContent=this.value">
+                </div>
+                <div style="margin-top:14px">
+                    <span class="upload-label"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> 미리보기 이미지 (1200×630 권장)</span>
+                    <div class="upload-zone" id="ogImageZone" style="min-height:140px">
+                        <input type="file" accept="image/*" id="ogImageInput" onchange="handleOgImageUpload(this)">
+                        <div class="upload-zone-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+                        <div class="upload-text">클릭하여 <strong>미리보기 이미지</strong> 업로드</div>
+                        <img class="preview-img" id="ogImagePreview">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Settings (hidden) -->
         <div class="card" style="display:none">
             <div class="card-header">
                 <div class="card-icon text">
@@ -323,18 +386,36 @@
         const REPO_OWNER = 'acewedding21-boop';
         const REPO_NAME = 'ace-wedding';
         const API_BASE = 'https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME;
-        const state = { mobileImage: null, pcImage: null, originalHtml: null };
+        const LIVE_BASE = 'https://ace-wedding-eosin.vercel.app';
 
-        // Token: built-in default for all PCs
+        // Section mapping: page order → filename
+        const SECTIONS = [
+            { order:1,  file:'18', name:'이벤트 안내 (메인 배너)' },
+            { order:2,  file:'1',  name:'메인 비주얼' },
+            { order:3,  file:'2',  name:'상담혜택' },
+            { order:4,  file:'3',  name:'에이스웨딩 특별혜택' },
+            { order:5,  file:'4',  name:'에이스웨딩 특별혜택' },
+            { order:6,  file:'5',  name:'특별한 이유' },
+            { order:7,  file:'6',  name:'예식만족도' },
+            { order:8,  file:'7',  name:'다이렉트 청주지사' },
+            { order:9,  file:'8',  name:'웨딩포인트' },
+            { order:10, file:'9',  name:'충청지역 할인' },
+            { order:11, file:'10', name:'제휴 웨딩홀' },
+            { order:12, file:'11', name:'드레스' },
+            { order:13, file:'12', name:'스튜디오' },
+            { order:14, file:'13', name:'메이크업' },
+            { order:15, file:'14', name:'기타 제휴' },
+            { order:16, file:'15', name:'기타 제휴' },
+            { order:17, file:'16', name:'혼수 제휴' },
+        ];
+
+        const state = { originalHtml: null, htmlSha: null, selectedSection: null, pending: {}, ogImage: null };
+
+        // Token
         const _t = ['ghp_mqxETGmGu3', 'Wcrv9jzPPqH8', '6BUmih9Z4W4Qaa'];
         const DEFAULT_TOKEN = _t.join('');
         function getToken() { return localStorage.getItem('gh_token') || DEFAULT_TOKEN; }
         function saveToken() { localStorage.setItem('gh_token', document.getElementById('githubToken').value.trim()); showToast('토큰 저장 완료'); fetchOriginalHtml(); }
-        document.addEventListener('DOMContentLoaded', () => {
-            const saved = getToken();
-            if (saved) document.getElementById('githubToken').value = saved;
-            document.getElementById('githubToken').addEventListener('change', saveToken);
-        });
 
         // GitHub API helpers
         async function ghGet(path) {
@@ -360,16 +441,77 @@
             try { const d = await ghGet(path); return d.sha; } catch { return null; }
         }
 
+        // Build section grid
+        function renderSectionGrid() {
+            const grid = document.getElementById('sectionGrid');
+            grid.innerHTML = '';
+            SECTIONS.forEach(function(sec) {
+                const card = document.createElement('div');
+                card.className = 'section-card' + (state.pending[sec.file] ? ' has-pending' : '') + (state.selectedSection === sec.file ? ' selected' : '');
+                card.onclick = function() { selectSection(sec.file); };
+                card.innerHTML = '<img class="section-thumb" src="' + LIVE_BASE + '/images/mobile/' + sec.file + '.jpg" alt="' + sec.name + '" loading="lazy" onerror="this.style.background=\'#ddd\'">' +
+                    '<div class="section-label"><span class="num">' + sec.order + '</span>' + sec.name + '</div>';
+                grid.appendChild(card);
+            });
+        }
+
+        function selectSection(fileId) {
+            state.selectedSection = fileId;
+            var sec = SECTIONS.find(function(s) { return s.file === fileId; });
+            document.getElementById('uploadPanelLabel').textContent = sec.order + '번 — ' + sec.name;
+            document.getElementById('uploadPanelFile').textContent = '파일: ' + fileId + '.jpg';
+            document.getElementById('uploadPanel').classList.add('visible');
+            // Reset upload UI
+            ['mobilePreview','pcPreview'].forEach(function(id) { document.getElementById(id).style.display = 'none'; });
+            ['mobileUploadZone','pcUploadZone'].forEach(function(id) { document.getElementById(id).classList.remove('active'); });
+            ['mobileImageInput','pcImageInput'].forEach(function(id) { document.getElementById(id).value = ''; });
+            // Show pending if exists
+            var p = state.pending[fileId];
+            if (p) {
+                if (p.mobile) { document.getElementById('mobilePreview').src = p.mobile; document.getElementById('mobilePreview').style.display = 'block'; document.getElementById('mobileUploadZone').classList.add('active'); }
+                if (p.pc) { document.getElementById('pcPreview').src = p.pc; document.getElementById('pcPreview').style.display = 'block'; document.getElementById('pcUploadZone').classList.add('active'); }
+            }
+            renderSectionGrid();
+            document.getElementById('uploadPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function handleSectionUpload(type, input) {
+            var file = input.files[0]; if (!file) return;
+            var fileId = state.selectedSection;
+            if (!fileId) { showToast('먼저 섹션을 선택해주세요'); return; }
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                if (!state.pending[fileId]) state.pending[fileId] = {};
+                state.pending[fileId][type] = e.target.result;
+                var pid = type === 'mobile' ? 'mobilePreview' : 'pcPreview';
+                var zid = type === 'mobile' ? 'mobileUploadZone' : 'pcUploadZone';
+                document.getElementById(pid).src = e.target.result;
+                document.getElementById(pid).style.display = 'block';
+                document.getElementById(zid).classList.add('active');
+                updatePendingBadge();
+                renderSectionGrid();
+                showToast(type === 'mobile' ? '모바일' : 'PC' + ' 이미지 등록 완료');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updatePendingBadge() {
+            var count = Object.keys(state.pending).length;
+            var badge = document.getElementById('pendingBadge');
+            if (count > 0) { badge.textContent = count + '개 섹션 대기'; badge.style.display = 'inline-block'; }
+            else { badge.style.display = 'none'; }
+        }
+
         // Fetch current landing page
         async function fetchOriginalHtml() {
             try {
-                const token = getToken();
+                var token = getToken();
                 if (token) {
-                    const d = await ghGet('/contents/index.html');
+                    var d = await ghGet('/contents/index.html');
                     state.originalHtml = decodeURIComponent(escape(atob(d.content.replace(/\n/g, ''))));
                     state.htmlSha = d.sha;
                 } else {
-                    const r = await fetch('https://ace-wedding-eosin.vercel.app/');
+                    var r = await fetch(LIVE_BASE + '/');
                     if (r.ok) state.originalHtml = await r.text();
                 }
                 if (state.originalHtml) { showToast('랜딩페이지 데이터 로드 완료'); parseCurrentValues(); }
@@ -378,56 +520,84 @@
 
         function parseCurrentValues() {
             if (!state.originalHtml) return;
-            const doc = new DOMParser().parseFromString(state.originalHtml, 'text/html');
-            doc.querySelectorAll('input[name="visit_date"]').forEach((r, i) => {
-                const label = r.parentElement;
-                if (label) { const el = document.getElementById('visitDate' + (i+1)); if (el) el.value = label.textContent.trim(); }
+            var doc = new DOMParser().parseFromString(state.originalHtml, 'text/html');
+            doc.querySelectorAll('input[name="visit_date"]').forEach(function(r, i) {
+                var label = r.parentElement;
+                if (label) { var el = document.getElementById('visitDate' + (i+1)); if (el) el.value = label.textContent.trim(); }
             });
-            const fh = doc.querySelector('.form-header');
+            var fh = doc.querySelector('.form-header');
             if (fh) {
-                const s = fh.querySelector('p'), t = fh.querySelector('h2'), d = fh.querySelector('.sub-desc');
+                var s = fh.querySelector('p'), t = fh.querySelector('h2'), dd = fh.querySelector('.sub-desc');
                 if (s) document.getElementById('formSubtitle').value = s.textContent;
                 if (t) document.getElementById('formTitle').value = t.textContent;
-                if (d) document.getElementById('formDesc').value = d.textContent;
+                if (dd) document.getElementById('formDesc').value = dd.textContent;
+            }
+            // OG tags
+            var ogT = doc.querySelector('meta[property="og:title"]');
+            var ogD = doc.querySelector('meta[property="og:description"]');
+            var ogI = doc.querySelector('meta[property="og:image"]');
+            if (ogT) { document.getElementById('ogTitle').value = ogT.getAttribute('content'); document.getElementById('ogPreviewTitle').textContent = ogT.getAttribute('content'); }
+            if (ogD) { document.getElementById('ogDesc').value = ogD.getAttribute('content'); document.getElementById('ogPreviewDesc').textContent = ogD.getAttribute('content'); }
+            if (ogI) {
+                var imgUrl = ogI.getAttribute('content');
+                var imgEl = document.getElementById('ogCurrentImg');
+                imgEl.src = imgUrl; imgEl.style.display = 'block';
+                document.getElementById('ogImgPlaceholder').style.display = 'none';
             }
         }
 
-        function handleImageUpload(type, input) {
-            const file = input.files[0]; if (!file) return;
-            const reader = new FileReader();
+        function handleOgImageUpload(input) {
+            var file = input.files[0]; if (!file) return;
+            var reader = new FileReader();
             reader.onload = function(e) {
-                const pid = type === 'mobile' ? 'mobilePreview' : 'pcPreview';
-                const zid = type === 'mobile' ? 'mobileUploadZone' : 'pcUploadZone';
-                document.getElementById(pid).src = e.target.result;
-                document.getElementById(pid).style.display = 'block';
-                document.getElementById(zid).classList.add('active');
-                if (type === 'mobile') state.mobileImage = e.target.result;
-                else state.pcImage = e.target.result;
-                showToast((type === 'mobile' ? '모바일' : 'PC') + ' 이미지 업로드 완료');
+                state.ogImage = e.target.result;
+                var prev = document.getElementById('ogImagePreview');
+                prev.src = e.target.result; prev.style.display = 'block';
+                document.getElementById('ogImageZone').classList.add('active');
+                // Update live preview card
+                var imgEl = document.getElementById('ogCurrentImg');
+                imgEl.src = e.target.result; imgEl.style.display = 'block';
+                document.getElementById('ogImgPlaceholder').style.display = 'none';
+                showToast('미리보기 이미지 등록 완료');
             };
             reader.readAsDataURL(file);
         }
 
-        // MAIN: Apply to live (string replacement - safe, no DOM corruption)
+        // MAIN: Apply to live
         async function applyToLive() {
-            const token = getToken();
+            var token = getToken();
             if (!token) { showToast('GitHub 토큰을 먼저 입력해주세요'); return; }
-            const btn = document.getElementById('applyBtn');
+            var btn = document.getElementById('applyBtn');
             btn.disabled = true; btn.innerHTML = '<svg viewBox="0 0 24 24" style="animation:pulse 1s infinite"><polyline points="20 6 9 17 4 12"/></svg> 적용 중...';
             try {
-                if (state.pcImage) {
-                    const sha = await getFileSha('/contents/images/18.jpg');
-                    await ghPutBinary('/contents/images/18.jpg', state.pcImage, sha, 'update: PC main image');
+                // Push all pending images
+                var keys = Object.keys(state.pending);
+                for (var i = 0; i < keys.length; i++) {
+                    var fid = keys[i];
+                    var p = state.pending[fid];
+                    if (p.pc) {
+                        showToast('PC 이미지 업로드 중... (' + fid + '.jpg)');
+                        var sha = await getFileSha('/contents/images/' + fid + '.jpg');
+                        await ghPutBinary('/contents/images/' + fid + '.jpg', p.pc, sha, 'update: PC image ' + fid);
+                    }
+                    if (p.mobile) {
+                        showToast('모바일 이미지 업로드 중... (' + fid + '.jpg)');
+                        var sha2 = await getFileSha('/contents/images/mobile/' + fid + '.jpg');
+                        await ghPutBinary('/contents/images/mobile/' + fid + '.jpg', p.mobile, sha2, 'update: mobile image ' + fid);
+                    }
                 }
-                if (state.mobileImage) {
-                    const sha = await getFileSha('/contents/images/mobile/18.jpg');
-                    await ghPutBinary('/contents/images/mobile/18.jpg', state.mobileImage, sha, 'update: mobile main image');
+                // Upload OG preview image if changed
+                if (state.ogImage) {
+                    showToast('미리보기 이미지 업로드 중...');
+                    var ogSha = await getFileSha('/contents/images/og-preview.jpg');
+                    await ghPutBinary('/contents/images/og-preview.jpg', state.ogImage, ogSha, 'update: OG preview image');
                 }
-                let html = state.originalHtml;
-                let changed = false;
-                const newSubtitle = document.getElementById('formSubtitle').value;
-                const newTitle = document.getElementById('formTitle').value;
-                const newDesc = document.getElementById('formDesc').value;
+                // Update HTML (dates + form text + OG tags)
+                var html = state.originalHtml;
+                var changed = false;
+                var newSubtitle = document.getElementById('formSubtitle').value;
+                var newTitle = document.getElementById('formTitle').value;
+                var newDesc = document.getElementById('formDesc').value;
                 html = html.replace(/(class="form-header">\s*<p[^>]*>)([^<]+)(<\/p>)/, function(m, pre, old, post) {
                     if (old !== newSubtitle) { changed = true; return pre + newSubtitle + post; } return m;
                 });
@@ -437,6 +607,19 @@
                 html = html.replace(/(class="sub-desc"[^>]*>)([^<]+)(<\/p>)/, function(m, pre, old, post) {
                     if (old !== newDesc) { changed = true; return pre + newDesc + post; } return m;
                 });
+                // OG meta tags
+                var newOgTitle = document.getElementById('ogTitle').value.trim();
+                var newOgDesc = document.getElementById('ogDesc').value.trim();
+                if (newOgTitle) {
+                    html = html.replace(/(property="og:title"\s+content=")([^"]*)(")/,function(m,pre,old,post){
+                        if(old!==newOgTitle){changed=true;return pre+newOgTitle+post;}return m;
+                    });
+                }
+                if (newOgDesc) {
+                    html = html.replace(/(property="og:description"\s+content=")([^"]*)(")/,function(m,pre,old,post){
+                        if(old!==newOgDesc){changed=true;return pre+newOgDesc+post;}return m;
+                    });
+                }
                 var dateIdx = 0;
                 var dateInputs = ['visitDate1','visitDate2','visitDate3'];
                 html = html.replace(/<label[^>]*>\s*<input([^>]*name="visit_date")[^>]*value="([^"]*)"([^>]*)>\s*([^\n<]+)/g, function(match, pre, oldValue, post, oldText) {
@@ -449,9 +632,14 @@
                     return match;
                 });
                 if (changed) {
-                    const freshData = await ghGet('/contents/index.html');
-                    await ghPut('/contents/index.html', html, freshData.sha, 'update: form text and dates');
+                    var freshData = await ghGet('/contents/index.html');
+                    await ghPut('/contents/index.html', html, freshData.sha, 'update: form text, dates, and OG tags');
                 }
+                state.pending = {};
+                state.ogImage = null;
+                updatePendingBadge();
+                renderSectionGrid();
+                document.getElementById('uploadPanel').classList.remove('visible');
                 showToast('적용 완료 — 약 1분 후 라이브 반영됩니다');
                 setTimeout(function() { fetchOriginalHtml(); }, 3000);
             } catch (e) {
@@ -461,19 +649,31 @@
         }
 
         function resetAll() {
-            ['mobilePreview','pcPreview'].forEach(id => document.getElementById(id).style.display = 'none');
-            ['mobileUploadZone','pcUploadZone'].forEach(id => document.getElementById(id).classList.remove('active'));
-            ['mobileImageInput','pcImageInput'].forEach(id => document.getElementById(id).value = '');
-            state.mobileImage = null; state.pcImage = null;
-            parseCurrentValues(); showToast('초기화 완료');
+            ['mobilePreview','pcPreview'].forEach(function(id) { document.getElementById(id).style.display = 'none'; });
+            ['mobileUploadZone','pcUploadZone'].forEach(function(id) { document.getElementById(id).classList.remove('active'); });
+            ['mobileImageInput','pcImageInput'].forEach(function(id) { document.getElementById(id).value = ''; });
+            state.pending = {};
+            state.selectedSection = null;
+            document.getElementById('uploadPanel').classList.remove('visible');
+            updatePendingBadge();
+            renderSectionGrid();
+            parseCurrentValues();
+            showToast('초기화 완료');
         }
 
         function showToast(msg) {
-            const t = document.getElementById('toast');
+            var t = document.getElementById('toast');
             document.getElementById('toastText').textContent = msg;
-            t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000);
+            t.classList.add('show'); setTimeout(function() { t.classList.remove('show'); }, 3000);
         }
 
+        // Init
+        document.addEventListener('DOMContentLoaded', function() {
+            var saved = getToken();
+            if (saved) document.getElementById('githubToken').value = saved;
+            document.getElementById('githubToken').addEventListener('change', saveToken);
+            renderSectionGrid();
+        });
         fetchOriginalHtml();
     </script>
 </body>
