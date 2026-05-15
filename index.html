@@ -658,6 +658,21 @@
                     }
                     return match;
                 });
+                // Always ensure OG tags use the correct custom domain
+                var CUSTOM_DOMAIN = 'https://www.ace-wedding.co.kr';
+                html = html.replace(/(property="og:image"\s+content=")https?:\/\/[^\/]+/g, function(m, pre) {
+                    changed = true;
+                    return pre + CUSTOM_DOMAIN;
+                });
+                html = html.replace(/(property="og:url"\s+content=")([^"]*)(")/, function(m, pre, old, post) {
+                    if (old !== CUSTOM_DOMAIN) { changed = true; return pre + CUSTOM_DOMAIN + post; }
+                    return m;
+                });
+                // Ensure og:image:width and og:image:height exist
+                if (html.indexOf('og:image:width') === -1) {
+                    html = html.replace(/(<meta property="og:image" content="[^"]*">)/, '$1\n    <meta property="og:image:width" content="1200">\n    <meta property="og:image:height" content="630">');
+                    changed = true;
+                }
                 if (changed) {
                     var freshData = await ghGet('/contents/index.html');
                     await ghPut('/contents/index.html', html, freshData.sha, 'update: form text, dates, and OG tags');
