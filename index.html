@@ -620,6 +620,14 @@
                         if(old!==newOgDesc){changed=true;return pre+newOgDesc+post;}return m;
                     });
                 }
+                // Cache-bust OG image URL when image is changed
+                if (state.ogImage) {
+                    var cacheBuster = Date.now();
+                    html = html.replace(/(property="og:image"\s+content="[^"?]*)\??[^"]*(")/,function(m,pre,post){
+                        changed=true;
+                        return pre+'?v='+cacheBuster+post;
+                    });
+                }
                 var dateIdx = 0;
                 var dateInputs = ['visitDate1','visitDate2','visitDate3'];
                 html = html.replace(/<label[^>]*>\s*<input([^>]*name="visit_date")[^>]*value="([^"]*)"([^>]*)>\s*([^\n<]+)/g, function(match, pre, oldValue, post, oldText) {
